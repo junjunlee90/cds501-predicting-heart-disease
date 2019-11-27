@@ -220,22 +220,22 @@ heatmap(cor, col = palette, scale = "column")
 # Managing Data
 
 ```{r}
-# removes observation for which 'ap_hi' or 'ap_lo' has negative values
-data <- subset(data, ap_hi > 0 & ap_lo > 0)
+# removes observation for which 'Systole' or 'Diastole' has negative values
+data <- subset(data, Systole > 0 & Diastole > 0)
 
 # removes 'ap_hi' and 'ap_lo' outliers
 iqr_multiplier = 3
-ap_hi_upper_threshold <- quantile(data$ap_hi, .75) + iqr_multiplier * (quantile(data$ap_hi, .75) - quantile(data$ap_hi, .25))
-ap_hi_lower_threshold <- quantile(data$ap_hi, .25) - iqr_multiplier * (quantile(data$ap_hi, .75) - quantile(data$ap_hi, .25))
-ap_lo_upper_threshold <- quantile(data$ap_lo, .75) + iqr_multiplier * (quantile(data$ap_lo, .75) - quantile(data$ap_lo, .25))
-ap_lo_lower_threshold <- quantile(data$ap_lo, .25) - iqr_multiplier * (quantile(data$ap_lo, .75) - quantile(data$ap_lo, .25))
-data <- subset(data, ap_hi < ap_hi_upper_threshold & ap_hi > ap_hi_lower_threshold & ap_lo < ap_lo_upper_threshold & ap_lo > ap_hi_lower_threshold)
+ap_hi_upper_threshold <- quantile(data$Systole, .75) + iqr_multiplier * (quantile(data$Systole, .75) - quantile(data$Systole, .25))
+ap_hi_lower_threshold <- quantile(data$Systole, .25) - iqr_multiplier * (quantile(data$Systole, .75) - quantile(data$Systole, .25))
+ap_lo_upper_threshold <- quantile(data$Diastole, .75) + iqr_multiplier * (quantile(data$Diastole, .75) - quantile(data$Diastole, .25))
+ap_lo_lower_threshold <- quantile(data$Diastole, .25) - iqr_multiplier * (quantile(data$Diastole, .75) - quantile(data$Diastole, .25))
+data <- subset(data, Systole < ap_hi_upper_threshold & Systole > ap_hi_lower_threshold & Diastole < ap_lo_upper_threshold & Diastole > ap_lo_lower_threshold)
 
 # removes 'weight' outliers
 weight_iqr_multiplier = 1.5
-weight_upper_threshold <- quantile(data$weight, .75) + weight_iqr_multiplier * (quantile(data$weight, .75) - quantile(data$weight, .25))
-weight_lower_threshold <- quantile(data$weight, .25) - weight_iqr_multiplier * (quantile(data$weight, .75) - quantile(data$weight, .25))
-data <- subset(data, weight > weight_lower_threshold & weight < weight_upper_threshold)
+weight_upper_threshold <- quantile(data$Weight, .75) + weight_iqr_multiplier * (quantile(data$Weight, .75) - quantile(data$Weight, .25))
+weight_lower_threshold <- quantile(data$Weight, .25) - weight_iqr_multiplier * (quantile(data$Weight, .75) - quantile(data$Weight, .25))
+data <- subset(data, Weight > weight_lower_threshold & Weight < weight_upper_threshold)
 
 # summerizes newly encoded dataset
 summary(data)
