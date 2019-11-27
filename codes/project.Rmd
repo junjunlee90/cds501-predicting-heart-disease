@@ -7,16 +7,28 @@ output: pdf_document
 
 ```{r}
 library(varhandle)
+library(Amelia)
 library(corrplot)
 library(ggplot2)
+library(rpart)
+library(rpart.plot)
+library(rattle)
+library(RColorBrewer)
+library(e1071)
+library(caret)
+```
+
+# Setup knitr
+
+```{r setup, include=FALSE, echo=FALSE}
+# sets working directory to the directory of this file
+require("knitr")
+opts_knit$set(root.dir = dirname(rstudioapi::getActiveDocumentContext()$path))
 ```
 
 # Loading Data
 
 ```{r}
-# sets directory of current file as working directory
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-
 # reads dataset
 data <- read.csv2("../data/cardio.csv")
 
@@ -55,6 +67,9 @@ head(data)
 From the summary statistics, it is evident that the attributes 'Diastole' and 'Systole' have negative values, which are invalid. Also these two attributes, along with 'Weight' might have lots of outliers which need to be removed.
 
 ```{r}
+# explores missing values
+missmap(data)
+
 # explores types of the attributes
 unlist(sapply(data, class))
 
@@ -243,7 +258,59 @@ summary(data)
 
 # Modeling Data
 
-```{r}
+## Splitting Data
 
+```{r}
+# train/test split 
+set.seed(1994)
+split <- initial_split(data, prop=0.75, strata = "Target")
+training_set <- training(split)
+testing_set <- testing(split)
+
+# checks class distribution after the split
+prop.table(table(training_set$Target)) * 100
+prop.table(table(testing_set$Target)) * 100
 ```
 
+## Decision Tree
+
+```{r}
+tree_fit <- rpart(Target ~  Glucose + Smoking + Active + Alcohol, data = training_set, control = rpart.control(minsplit = 1000), xval = 5)
+fancyRpartPlot(tree_fit)
+```
+
+## Naive Bayes
+
+```{r}
+nb_model = naiveBayes(Target ~ ., data = training_set)
+```
+
+# Model Evaluation
+
+## Decision Tree
+
+```{r}
+predict <-  predict(tree_fit, testing_set, method = "class", type = "class")
+table(Actual = test$Target, Predicted = predict)
+
+tree_precision <- posPredValue(as.factor(predict), testing_set[["Target"]], positive="Positive")
+tree_recall <- sensitivity(predict, testing_set[["Target"]] , positive="Positive")
+
+cat("\n")
+cat("Precision: ", tree_precision * 100 , "%\n")
+cat("Recall: ", tree_recall * 100, "%\n")
+```
+
+## Naive Bayes
+
+```{r}
+predicted_nb <-  predict(nb_model, testing_set, method = "class", type = "class")
+table(Actual = test$Target, Predicted = predicted_nb)
+
+nb_precision <- posPredValue(as.factor(predicted_nb), testing_set[["Target"]], positive="Positive")
+nb_recall <- sensitivity(predicted_nb, testing_set[["Target"]] , positive="Positive")
+
+cat("\n")
+cat("Precision: ", nb_precision * 100 , "%\n")
+cat("Recall: ", nb_recall * 100, "%\n")
+```
